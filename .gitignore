@@ -1,0 +1,8 @@
+.vscode/
+alembic/
+certificates/
+__pycache__/
+
+.env
+Pipfile.lock
+alembic.ini
