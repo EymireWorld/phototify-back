@@ -82,8 +82,17 @@ class TokenSchema(Schema):
 
 # ====================
 
-class Like(Schema):
+class LikeSchema(Schema):
     id: int
     post_id: int
     user_id: int
+    created_at: datetime
+
+# ====================
+
+class CommentSchema(Schema):
+    id: int
+    post_id: int
+    user_id: int
+    text: str
     created_at: datetime

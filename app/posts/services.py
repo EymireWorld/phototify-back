@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import PostModel
+from app.models import PostModel, LikeModel
 from app.schemas import PostAddSchema, PostSchema, PostUpdateSchema
 
 
@@ -79,12 +79,37 @@ async def remove_post(session: AsyncSession, post_id: int):
 
 
 async def get_post_likes(session: AsyncSession, post_id: int):
-    pass
+    stmt = select(LikeModel).where(LikeModel.post_id == post_id)
+
+    result = await session.execute(stmt)
+
+    if not (result := result.scalars()):
+        return None
+    return [row.to_schema() for row in result]
 
 
 async def add_post_like(session: AsyncSession, post_id: int, user_id: int):
-    pass
+    values = {
+        'post_id': post_id,
+        'user_id': user_id,
+        'created_at': datetime.utcnow()
+    }
+    stmt = insert(LikeModel).values(**values).returning(LikeModel)
+
+    result = await session.execute(stmt)
+    await session.commit()
+
+    if not (result := result.scalar()):
+        return None
+    return result.to_schema()
 
 
 async def remove_post_like(session: AsyncSession, post_id: int, user_id: int):
-    pass
+    stmt = delete(LikeModel).where(LikeModel.post_id == post_id, LikeModel.user_id == user_id).returning(LikeModel)
+
+    result = await session.execute(stmt)
+    await session.commit() 
+
+    if not (result := result.scalar()):
+        return None
+    return result.to_schema()
