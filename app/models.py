@@ -1,6 +1,7 @@
 from datetime import datetime
 
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import ARRAY as Array
+from sqlalchemy import ForeignKey, Integer, String
 from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,
@@ -8,7 +9,7 @@ from sqlalchemy.orm import (
     mapped_column
 )
 
-from app.schemas import CommentSchema, LikeSchema, PostSchema, UserSchema
+from app.schemas import CommentSchema, PostSchema, UserSchema
 
 
 class Base(DeclarativeBase):
@@ -43,40 +44,27 @@ class UserModel(Base):
 
 
 class PostModel(Base):
-    author_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
-    created_at: Mapped[datetime]
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
     description: Mapped[str | None]
     filename: Mapped[str]
+    likes: Mapped[list[int]] = mapped_column(Array(Integer))
+    created_at: Mapped[datetime]
 
 
     def to_schema(self) -> PostSchema:
         return PostSchema(
             id= self.id,
-            author_id= self.author_id,
+            user_id= self.user_id,
             created_at= self.created_at,
             description= self.description,
+            likes= self.likes,
             filename= self.filename
-        )
-
-
-class LikeModel(Base):
-    post_id: Mapped[int] = mapped_column(ForeignKey('posts.id'), index= True)
-    user_id: Mapped[int]
-    created_at: Mapped[datetime]
-
-
-    def to_schema(self) -> LikeSchema:
-        return LikeSchema(
-            id= self.id,
-            post_id= self.post_id,
-            user_id= self.user_id,
-            created_at= self.created_at
         )
 
 
 class CommentModel(Base):
     post_id: Mapped[int] = mapped_column(ForeignKey('posts.id'), index= True)
-    user_id: Mapped[int]
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), index= True)
     text: Mapped[str] = mapped_column(String(256))
     created_at: Mapped[datetime]
 

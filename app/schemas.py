@@ -51,42 +51,31 @@ class UserProfileSchema(Schema):
 
 class PostSchema(Schema):
     id: int
-    author_id: int
-    created_at: datetime
+    user_id: int
     description: str | None = None
     filename: str
+    likes: list[int]
+    created_at: datetime
 
 
 class PostAddSchema(Schema):
-    author_id: int
     description: str | None
     filename: str
-
-
-class PostUpdateSchema(Schema):
-    description: str | None = None
 
 
 class PostShowSchema(Schema):
     id: int
-    author_id: int
-    created_at: datetime
+    user_id: int
     description: str | None
     filename: str
+    likes: list[int]
+    created_at: datetime
 
 # ====================
 
 class TokenSchema(Schema):
     access_token: str
     token_type: str
-
-# ====================
-
-class LikeSchema(Schema):
-    id: int
-    post_id: int
-    user_id: int
-    created_at: datetime
 
 # ====================
 

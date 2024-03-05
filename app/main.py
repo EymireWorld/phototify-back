@@ -5,7 +5,9 @@ from app.posts.router import router as posts_router
 from app.users.router import router as users_router
 
 
-app = FastAPI()
+app = FastAPI(
+    swagger_ui_parameters={"defaultModelsExpandDepth": -1}
+)
 app.include_router(posts_router)
 app.include_router(users_router)
 app.include_router(auth_router)
