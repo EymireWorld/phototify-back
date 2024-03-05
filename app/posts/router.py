@@ -4,17 +4,15 @@ from app.dependencies import CurrentUser, Session
 from app.posts import services
 from app.schemas import PostAddSchema as PostAdd
 from app.schemas import PostShowSchema as Post
+from app.schemas import CommentSchema as Comment
 
 
 router = APIRouter(
-    prefix= '/posts',
-    tags= ['Posts']
+    prefix= '/posts'
 )
-router.include_router()
-router.include_router()
 
 
-@router.get('')
+@router.get('', tags= ['Posts'])
 async def get_posts(
     session: Session,
     offset: int = 0,
@@ -23,7 +21,7 @@ async def get_posts(
     return await services.get_posts(session, offset, limit)
 
 
-@router.get('/{post_id}')
+@router.get('/{post_id}', tags= ['Posts'])
 async def get_post(
     session: Session,
     post_id: int
@@ -31,7 +29,7 @@ async def get_post(
     return await services.get_post(session, post_id)
 
 
-@router.post('')
+@router.post('', tags= ['Posts'])
 async def add_post(
     current_user: CurrentUser,
     session: Session,
@@ -40,7 +38,7 @@ async def add_post(
     return await services.add_post(session, data, current_user.id)
 
 
-@router.put('/{post_id}')
+@router.put('/{post_id}', tags= ['Posts'])
 async def update_post(
     current_user: CurrentUser,
     session: Session,
@@ -50,7 +48,7 @@ async def update_post(
     return await services.update_post(session, post_id, current_user.id, description)
 
 
-@router.delete('/{post_id}')
+@router.delete('/{post_id}', tags= ['Posts'])
 async def remove_post(
     current_user: CurrentUser,
     session: Session,
@@ -59,56 +57,58 @@ async def remove_post(
     return await services.remove_post(session, current_user.id, post_id)
 
 
-@router.post('/{post_id}/likes')
+@router.post('/{post_id}/likes', tags= ['Likes'])
 async def add_post_like(
     current_user: CurrentUser,
     session: Session,
     post_id: int
 ):
-    return await services.add_post_like(session, post_id, current_user.id)
+    return {
+        'liked': await services.add_post_like(session, post_id, current_user.id)
+    }
 
 
-@router.delete('/{post_id}/likes')
+@router.delete('/{post_id}/likes', tags= ['Likes'])
 async def add_post_like(
     current_user: CurrentUser,
     session: Session,
     post_id: int
 ):
-    return await services.remove_post_like(session, post_id, current_user.id)
+    return {
+        'disliked': await services.remove_post_like(session, post_id, current_user.id)
+    }
 
 
-@router.get('/{post_id}/comments')
+@router.get('/{post_id}/comments', tags= ['Comments'])
 async def get_post_comments(
-    current_user: CurrentUser,
     session: Session,
     post_id: int,
     offset: int = 0,
     limit: int = 10
-):
-    pass
+) -> list[Comment] | None:
+    return await services.get_post_comments(session, post_id, offset, limit)
 
 
-@router.get('/{post_id}/comments/{comment_id}')
+@router.get('/{post_id}/comments/{comment_id}', tags= ['Comments'])
 async def get_post_comment(
-    current_user: CurrentUser,
     session: Session,
     post_id: int,
     comment_id: int
-):
-    pass
+) -> Comment | None:
+    return await services.get_post_comments(session, post_id, comment_id)
 
 
-@router.post('/{post_id}/comments')
+@router.post('/{post_id}/comments', tags= ['Comments'])
 async def add_post_comment(
     current_user: CurrentUser,
     session: Session,
     post_id: int,
     text: str = Form()
 ):
-    pass
+    return await services.add_post_comment(session, post_id, current_user.id, text)
 
 
-@router.put('/{post_id}/comments/{comment_id}')
+@router.put('/{post_id}/comments/{comment_id}', tags= ['Comments'])
 async def update_post_comment(
     current_user: CurrentUser,
     session: Session,
@@ -118,7 +118,7 @@ async def update_post_comment(
     pass
 
 
-@router.delete('/{post_id}/comments{comment_id}')
+@router.delete('/{post_id}/comments{comment_id}', tags= ['Comments'])
 async def remove_post_comment(
     current_user: CurrentUser,
     session: Session,

@@ -85,3 +85,4 @@ class CommentSchema(Schema):
     user_id: int
     text: str
     created_at: datetime
+    edited_at: datetime | None = None

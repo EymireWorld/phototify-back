@@ -67,6 +67,7 @@ class CommentModel(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), index= True)
     text: Mapped[str] = mapped_column(String(256))
     created_at: Mapped[datetime]
+    edited_at: Mapped[datetime | None]
 
 
     def to_schema(self) -> CommentSchema:

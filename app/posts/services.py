@@ -3,8 +3,8 @@ from datetime import datetime
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import PostModel
-from app.schemas import PostAddSchema, PostSchema
+from app.models import PostModel, CommentModel
+from app.schemas import PostAddSchema, PostSchema, CommentSchema
 
 
 async def get_posts(
@@ -34,7 +34,11 @@ async def get_post(
     return result.to_schema()
 
 
-async def add_post(session: AsyncSession, data: PostAddSchema, user_id: int):
+async def add_post(
+    session: AsyncSession,
+    data: PostAddSchema,
+    user_id: int
+):
     values = {
         'user_id': user_id,
         'created_at': datetime.utcnow(),
@@ -52,7 +56,12 @@ async def add_post(session: AsyncSession, data: PostAddSchema, user_id: int):
     return result.to_schema()
 
 
-async def update_post(session: AsyncSession, user_id: int, post_id: int, description: str):
+async def update_post(
+    session: AsyncSession,
+    user_id: int,
+    post_id: int,
+    description: str
+):
     stmt = update(PostModel).where(PostModel.id == post_id, PostModel.user_id == user_id).values(description= description).returning(PostModel)
 
     result = await session.execute(stmt)
@@ -63,7 +72,11 @@ async def update_post(session: AsyncSession, user_id: int, post_id: int, descrip
     return result.to_schema()
 
 
-async def remove_post(session: AsyncSession, user_id: int, post_id: int):
+async def remove_post(
+    session: AsyncSession,
+    user_id: int,
+    post_id: int
+):
     stmt = delete(PostModel).where(PostModel.id == post_id, PostModel.user_id == user_id).returning(PostModel)
 
     result = await session.execute(stmt)
@@ -74,7 +87,11 @@ async def remove_post(session: AsyncSession, user_id: int, post_id: int):
     return result.to_schema()
 
 
-async def add_post_like(session: AsyncSession, post_id: int, user_id: int) -> bool:
+async def add_post_like(
+    session: AsyncSession,
+    post_id: int,
+    user_id: int
+) -> bool:
     if not (post := await get_post(session, post_id)):
         return False
     if user_id in post.likes:
@@ -90,7 +107,11 @@ async def add_post_like(session: AsyncSession, post_id: int, user_id: int) -> bo
     return True
 
 
-async def remove_post_like(session: AsyncSession, post_id: int, user_id: int) -> bool:
+async def remove_post_like(
+    session: AsyncSession,
+    post_id: int,
+    user_id: int
+) -> bool:
     if not (post := await get_post(session, post_id)):
         return False
     if user_id not in post.likes:
@@ -104,3 +125,71 @@ async def remove_post_like(session: AsyncSession, post_id: int, user_id: int) ->
     await session.commit()
     
     return True
+
+
+async def get_post_comments(
+    session: AsyncSession,
+    post_id: int,
+    offset: int,
+    limit: int
+) -> list[CommentSchema] | None:
+    stmt = select(CommentModel).where(CommentModel.post_id == post_id)
+
+    result = await session.execute(stmt)
+
+    if not (result := result.scalars()):
+        return None
+    return [row.to_schema() for row in result][offset:][:limit]
+
+
+async def get_post_comment(
+    session: AsyncSession,
+    post_id: int,
+    comment_id: int
+) -> CommentSchema | None:
+    stmt = select(CommentModel).where(CommentModel.post_id == post_id, CommentModel.id == comment_id)
+
+    result = await session.execute(stmt)
+
+    if not (result := result.scalar()):
+        return None
+    return result.to_schema()
+
+
+async def add_post_comment(
+    session: AsyncSession,
+    post_id: int,
+    user_id: int,
+    text: str
+) -> CommentSchema | None:
+    values = {
+        'post_id': post_id,
+        'user_id': user_id,
+        'text': text,
+        'created_at': datetime.utcnow()
+    }
+    stmt = insert(CommentModel).values(**values).returning(CommentModel)
+
+    result = await session.execute(stmt)
+    await session.commit()
+
+    if not (result := result.scalar()):
+        return None
+    return result.to_schema()
+
+
+async def update_post_comment(
+    session: AsyncSession,
+    post_id: int,
+    comment_id: int,
+    text: str
+):
+    pass
+
+
+async def delete_post_comment(
+    session: AsyncSession,
+    post_id: int,
+    comment_id: int
+):
+    pass
