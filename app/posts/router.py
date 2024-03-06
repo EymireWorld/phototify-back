@@ -112,16 +112,16 @@ async def add_post_comment(
 async def update_post_comment(
     current_user: CurrentUser,
     session: Session,
-    post_id: int,
+    comment_id: int,
     text: str = Form()
 ):
-    pass
+    return await services.update_post_comment(session, comment_id, current_user.id, text)
 
 
-@router.delete('/{post_id}/comments{comment_id}', tags= ['Comments'])
+@router.delete('/{post_id}/comments/{comment_id}', tags= ['Comments'])
 async def remove_post_comment(
     current_user: CurrentUser,
     session: Session,
-    post_id: int
+    comment_id: int
 ):
-    pass
+    return await services.remove_post_comment(session, comment_id, current_user.id)

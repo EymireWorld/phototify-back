@@ -180,16 +180,30 @@ async def add_post_comment(
 
 async def update_post_comment(
     session: AsyncSession,
-    post_id: int,
     comment_id: int,
+    user_id: int,
     text: str
 ):
-    pass
+    stmt = update(CommentModel).where(CommentModel.id == comment_id, CommentModel.user_id == user_id).values(text= text).returning(CommentModel)
+
+    result = await session.execute(stmt)
+    await session.commit() 
+
+    if not (result := result.scalar()):
+        return None
+    return result.to_schema()
 
 
-async def delete_post_comment(
+async def remove_post_comment(
     session: AsyncSession,
-    post_id: int,
-    comment_id: int
+    comment_id: int,
+    user_id: int
 ):
-    pass
+    stmt = delete(CommentModel).where(CommentModel.id == comment_id, CommentModel.user_id == user_id).returning(CommentModel)
+
+    result = await session.execute(stmt)
+    await session.commit() 
+
+    if not (result := result.scalar()):
+        return None
+    return result.to_schema()
