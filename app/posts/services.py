@@ -161,7 +161,7 @@ async def add_post_comment(
     post_id: int,
     user_id: int,
     text: str
-) -> CommentSchema | None:
+) -> CommentSchema:
     values = {
         'post_id': post_id,
         'user_id': user_id,
@@ -180,11 +180,12 @@ async def add_post_comment(
 
 async def update_post_comment(
     session: AsyncSession,
+    post_id: int,
     comment_id: int,
     user_id: int,
     text: str
-):
-    stmt = update(CommentModel).where(CommentModel.id == comment_id, CommentModel.user_id == user_id).values(text= text).returning(CommentModel)
+) -> CommentSchema | None:
+    stmt = update(CommentModel).where(CommentModel.post_id == post_id, CommentModel.id == comment_id, CommentModel.user_id == user_id).values(text= text).returning(CommentModel)
 
     result = await session.execute(stmt)
     await session.commit() 
@@ -196,10 +197,11 @@ async def update_post_comment(
 
 async def remove_post_comment(
     session: AsyncSession,
+    post_id: int,
     comment_id: int,
     user_id: int
-):
-    stmt = delete(CommentModel).where(CommentModel.id == comment_id, CommentModel.user_id == user_id).returning(CommentModel)
+) -> CommentSchema | None:
+    stmt = delete(CommentModel).where(CommentModel.post_id == post_id, CommentModel.id == comment_id, CommentModel.user_id == user_id).returning(CommentModel)
 
     result = await session.execute(stmt)
     await session.commit() 
