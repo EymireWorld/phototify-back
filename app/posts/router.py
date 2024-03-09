@@ -1,10 +1,9 @@
-from fastapi import APIRouter, Form
+from fastapi import APIRouter, Form, UploadFile, HTTPException, status
 
 from app.dependencies import CurrentUser, Session
 from app.posts import services
-from app.schemas import PostAddSchema as PostAdd
-from app.schemas import PostShowSchema as Post
 from app.schemas import CommentSchema as Comment
+from app.schemas import PostShowSchema as Post
 
 
 router = APIRouter(
@@ -33,9 +32,16 @@ async def get_post(
 async def add_post(
     current_user: CurrentUser,
     session: Session,
-    data: PostAdd
+    file: UploadFile,
+    description: str | None = Form(None)
 ) -> Post:
-    return await services.add_post(session, data, current_user.id)
+    if file.content_type not in ('image/jpeg', 'image/png', 'video/mp4'):
+        raise HTTPException(
+            status_code= status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail= 'Use .jpg/.jpeg/.png/.mp4 file.'
+        )
+    
+    return await services.add_post(session, current_user.id, file, description)
 
 
 @router.put('/{post_id}', tags= ['Posts'])

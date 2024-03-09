@@ -3,6 +3,7 @@ alembic/
 certificates/*
 __pycache__/
 .venv
+uploads/*
 
 .env
 Pipfile.lock

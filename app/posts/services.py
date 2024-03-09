@@ -1,10 +1,15 @@
+import os
 from datetime import datetime
+from hashlib import sha256
 
+import aiofiles
+from fastapi import UploadFile
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import PostModel, CommentModel
-from app.schemas import PostAddSchema, PostSchema, CommentSchema
+from app.models import CommentModel, PostModel
+from app.schemas import CommentSchema, PostSchema
+from app.files.services import add_file
 
 
 async def get_posts(
@@ -36,15 +41,16 @@ async def get_post(
 
 async def add_post(
     session: AsyncSession,
-    data: PostAddSchema,
-    user_id: int
+    user_id: int,
+    file: UploadFile,
+    description: str | None
 ):
     values = {
         'user_id': user_id,
         'created_at': datetime.utcnow(),
-        'description': data.description,
+        'description': description,
         'likes': [],
-        'filename': data.filename
+        'filename': await add_file(file)
     }
     stmt = insert(PostModel).values(**values).returning(PostModel)
 
