@@ -20,10 +20,4 @@ def get_file(
 async def add_file(
     file: UploadFile
 ):
-    if file.content_type not in ('image/jpeg', 'image/png', 'video/mp4'):
-        raise HTTPException(
-            status_code= status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-            detail= 'Use .jpg/.jpeg/.png/.mp4 file.'
-        )
-    
     return {'file': await services.add_file(file)}

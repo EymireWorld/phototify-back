@@ -9,10 +9,10 @@ from app.files.router import router as files_router
 app = FastAPI(
     swagger_ui_parameters={"defaultModelsExpandDepth": -1}
 )
-app.include_router(posts_router)
-app.include_router(users_router)
 app.include_router(auth_router)
+app.include_router(posts_router)
 app.include_router(files_router)
+app.include_router(users_router)
 
 
 @app.get('/')

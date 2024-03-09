@@ -35,12 +35,6 @@ async def add_post(
     file: UploadFile,
     description: str | None = Form(None)
 ) -> Post:
-    if file.content_type not in ('image/jpeg', 'image/png', 'video/mp4'):
-        raise HTTPException(
-            status_code= status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-            detail= 'Use .jpg/.jpeg/.png/.mp4 file.'
-        )
-    
     return await services.add_post(session, current_user.id, file, description)
 
 
